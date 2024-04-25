@@ -16,27 +16,24 @@ const categoriesComponent = (categories) => `
 <h3>Pick a category</h3>
 <div class="categories">
   ${categories.map(category => `
-    <p class="category" data-id="${category.id}">${category.name}</p>
+    <p class="category" data-id="${category.id}" data-text="${category.name}" data-hover="click"></p>
   `).join("")}
 </div>
 `;
-const pickedCategoryComponent = (questions, pickedCategoryAnswers) => `
-<div>
+const pickedCategoryComponent = (questions, randomizedAnswers, count) => `
+<div> 
+  <p class="result"><span class="correct">Correct answers:${correct}</span> | <span class="incorrect" >Incorrect answers: ${incorrect}</span></p>
+  <p id="countdown"></p>
   <h1>${questions[0].category}</h1>
-  <form>
-  ${questions.map((question, i) => `
-    <h4>${question.question}</h4>
-    <div class="answers">
-    ${pickedCategoryAnswers[i].map((answer) => `
-      <input type="radio" value="${answer}" id="${answer}" name="${question.question}" />
-      <label for="${answer}">${answer}</label>
-      `).join("")}
-      <p id="${question.id}" style="display:none"></p>
+    <div class="question">
+      <h3>${questions[count].question}</h3>
+      ${randomizedAnswers[count].map((answer) => {
+    return `<button class="answerOption" data-questionid="${questions[count].id}">${answer}</button>`;
+}).join("")}
     </div>
-    
-    `)}
-    <button class="submit">Send</button>
-    </form>
+    <button class="back">Back</button>
+    <button class="next">Next</button>
+   
   </div>
 `;
 const fetchCategories = () => __awaiter(void 0, void 0, void 0, function* () {
@@ -55,55 +52,66 @@ const fetchCategory = (id) => __awaiter(void 0, void 0, void 0, function* () {
 const pickCategory = (e, mainElement) => __awaiter(void 0, void 0, void 0, function* () {
     const target = e.target;
     if (target.className === "category") {
+        correct = 0;
+        incorrect = 0;
         const id = Number(target.dataset.id);
         const questions = yield fetchCategory(id);
-        makeDom(mainElement, pickedCategoryComponent(questions, pickedCategoryAnswers(questions)));
+        allQuestions = questions;
+        randomizedAnswers = questions.map((question) => {
+            correctAnsw.push({
+                question: question.question,
+                answer: question.correct_answer,
+                id: question.id
+            });
+            return [...question.incorrect_answers, question.correct_answer].sort((a, b) => 0.5 - Math.random());
+        });
+        makeDom(mainElement, pickedCategoryComponent(allQuestions, randomizedAnswers, count));
     }
 });
-const pickedCategoryAnswers = (questions) => {
-    return questions.map((question) => {
-        answers.push({
-            question: question.question,
-            answer: question.correct_answer,
-            id: question.id
-        });
-        return [...question.incorrect_answers, question.correct_answer];
-    });
-};
 const makeDom = (element, component) => {
     element.innerHTML = "";
     element.insertAdjacentHTML("beforeend", component);
 };
-const submitAnswers = (e) => {
+const nextAnswers = (e, mainElement, allQuestions) => {
     const target = e.target;
-    if (target.className === "submit") {
-        e.preventDefault();
-        const form = document.querySelector('form');
-        const data = new FormData(form);
-        let count = 1;
-        for (const entry of data) {
-            const question = answers.find(answer => answer.id === count);
-            console.log("question id: " + question.id + "count: " + count);
-            if (question.id !== count)
-                count++;
-            if (question.answer === entry[1]) {
-                const pElement = document.getElementById(`${question.id}`);
-                pElement.style.display = 'block';
-                pElement.style.color = "green";
-                pElement.innerHTML = "Correct!";
-                count++;
-            }
-            else if (question.answer !== entry[1]) {
-                const pElement = document.getElementById(`${question.id}`);
-                pElement.style.display = 'block';
-                pElement.style.color = "red";
-                pElement.innerHTML = "Incorrect!";
-                count++;
-            }
+    if (target.className === "next") {
+        count++;
+        makeDom(mainElement, pickedCategoryComponent(allQuestions, randomizedAnswers, count));
+    }
+};
+const clickToBack = (e, mainElement, categoriesComponent, categories) => {
+    const target = e.target;
+    if (target.className === "back") {
+        console.log("back");
+        makeDom(mainElement, categoriesComponent(categories));
+        correctAnsw = [];
+    }
+};
+const checkAnswer = (e) => {
+    const target = e.target;
+    if (target.className === "answerOption") {
+        const questionId = target.dataset.questionid;
+        const question = allQuestions.find(question => question.id === Number(questionId));
+        const buttons = document.querySelectorAll(".answerOption");
+        buttons.forEach(button => button.setAttribute("disabled", ""));
+        if (target.textContent === (question === null || question === void 0 ? void 0 : question.correct_answer)) {
+            correct++;
+            console.log("correct");
+        }
+        else {
+            incorrect++;
+            console.log("incorrect");
+            console.log(question === null || question === void 0 ? void 0 : question.correct_answer);
         }
     }
 };
-let answers = [];
+let start = 15;
+let correctAnsw = [];
+let correct = 0;
+let incorrect = 0;
+let count = 0;
+let allQuestions = [];
+let randomizedAnswers = [];
 function init() {
     return __awaiter(this, void 0, void 0, function* () {
         const rootElement = document.getElementById('root');
@@ -113,7 +121,9 @@ function init() {
         mainElement === null || mainElement === void 0 ? void 0 : mainElement.insertAdjacentHTML("beforeend", categoriesComponent(categories));
         window.addEventListener("click", (e) => {
             pickCategory(e, mainElement);
-            submitAnswers(e);
+            nextAnswers(e, mainElement, allQuestions);
+            clickToBack(e, mainElement, categoriesComponent, categories);
+            checkAnswer(e);
         });
     });
 }

@@ -1,0 +1,51 @@
+*{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  
+}
+#root{
+  background-color: black;
+  color: rgb(74, 74, 225);
+}
+
+.categories{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin: 10px;
+}
+.category {
+  padding: 10px;
+  border: 2px solid rgb(61, 60, 60);
+  border-radius: 10%;
+  background-color: rgb(36, 36, 35);
+  color: white;
+  text-transform: uppercase;
+  cursor: pointer;
+  max-width: 300px;
+  width: 100%;
+  height: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  transition: all .2s ease-in;
+}
+.category:before{
+  content: attr(data-text);
+}
+.category:hover{
+  box-shadow: 1px 3px black;
+  transform: scale(1.02);
+  font-size: 110%;
+ 
+}
+.category:hover::before{
+  content:"\eb8b";
+  font-family: "Material Symbols Outlined";
+  font-size: 200%;
+  transition: content 1.5s ease-in;
+  
+}
