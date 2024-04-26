@@ -44,22 +44,35 @@ const categoriesComponent = (categories:Category[]) => `
 `
 
 const pickedCategoryComponent = (questions:Question[],randomizedAnswers:any, count:number) => `
-<div> 
-  <p class="result"><span class="correct">Correct answers:${correct}</span> | <span class="incorrect" >Incorrect answers: ${incorrect}</span></p>
-  <p id="countdown"></p>
+<div class="pickedCategory"> 
+  <div class="informations">
+    <p id="countdown">10</p>
+    <p class="result"><span class="correct">Correct answers:${correct}</span> | <span class="incorrect" >Incorrect answers: ${incorrect}</span></p>
+  </div>
   <h1>${questions[0].category}</h1>
     <div class="question">
       <h3>${questions[count].question}</h3>
-      ${randomizedAnswers[count].map((answer: any) => {
-        return `<button class="answerOption" data-questionid="${questions[count].id}">${answer}</button>`
-      }).join("")}
+      <div class="answers">
+        ${randomizedAnswers[count].map((answer: any) => {
+          return `<button class="answerOption" data-questionid="${questions[count].id}">${answer}</button>`
+        }).join("")}
+      </div>
     </div>
-    <button class="back">Back</button>
-    <button class="next">Next</button>
+    <div class="buttonContainer">
+      <button class="back">Back</button>
+      <button class="next" disabled>Next</button>
+    </div>
    
   </div>
 `
-
+const showResultComponent = () => `
+        <div class="showResult">
+        <h3>Your result:</h3>
+        <p>Correct: ${correct}</p>
+        <p>Incorrect: ${incorrect}</p>
+        <button class="back">Back</p>
+        </div>
+`
 
 const fetchCategories = async () => {
   const res = await fetch("https://opentdb.com/api_category.php")
@@ -84,15 +97,12 @@ const pickCategory = async (e:MouseEvent,mainElement:HTMLElement) => {
     const questions = await fetchCategory(id)
     allQuestions = questions
     randomizedAnswers = questions.map((question) => {
-      correctAnsw.push({
-        question: question.question,
-        answer: question.correct_answer,
-        id: question.id
-      })
       return [...question.incorrect_answers,question.correct_answer].sort((a, b) => 0.5 - Math.random());
     })
-   
+    
     makeDom(mainElement,pickedCategoryComponent(allQuestions,randomizedAnswers,count))
+    countDown(mainElement)
+    clearTimer = false
   }
 }
 
@@ -100,14 +110,22 @@ const pickCategory = async (e:MouseEvent,mainElement:HTMLElement) => {
 const makeDom = (element:HTMLElement,component: string) => {
   element.innerHTML = ""
   element.insertAdjacentHTML("beforeend",component)
+  
 }
 
 const nextAnswers = (e:MouseEvent,mainElement:HTMLElement,allQuestions:Question[]) => {
   const target = e.target as HTMLButtonElement
   if(target.className === "next"){
-    count++
-    makeDom(mainElement,pickedCategoryComponent(allQuestions,randomizedAnswers,count))
+      count++
+      if(count === allQuestions.length){
+        showResult(mainElement,showResultComponent)
+      }else{
+        makeDom(mainElement,pickedCategoryComponent(allQuestions,randomizedAnswers,count))
+        countDown(mainElement)
+        clearTimer = false
+      }
   }
+ 
 } 
 
 const clickToBack = (e:MouseEvent,mainElement:HTMLElement,categoriesComponent:(categories:Category[]) => string,categories:Category[]) => {
@@ -115,37 +133,64 @@ const clickToBack = (e:MouseEvent,mainElement:HTMLElement,categoriesComponent:(c
   if(target.className === "back"){
     console.log("back")
   makeDom(mainElement,categoriesComponent(categories))
-  correctAnsw = []
+  count = 0
   }
 }
 
 const checkAnswer = (e:MouseEvent) => {
   const target = e.target as HTMLButtonElement
+ 
   if(target.className === "answerOption"){
+    const next = document.querySelector(".next") as HTMLButtonElement
+    next.disabled = false
+    clearTimer = true
     const questionId = target.dataset.questionid
     const question = allQuestions.find(question => question.id === Number(questionId))
     const buttons = document.querySelectorAll(".answerOption")
     buttons.forEach(button => button.setAttribute("disabled",""))
     if(target.textContent === question?.correct_answer){
       correct++
+      target.classList.add("correct")
       console.log("correct")
     }else{
       incorrect++
-      console.log("incorrect")
-      console.log(question?.correct_answer)
+      target.classList.add("incorrect")
     }
   }
+
 }
 
+const showResult = (mainElement:HTMLElement,showResultComponent:() => string) => {
+  makeDom(mainElement,showResultComponent())
+}
 
-
+const countDown = (mainElement:HTMLElement) => {
+  let counter = 10;
+  const countDownElement = document.querySelector("#countdown") as HTMLParagraphElement
+  const timer = setInterval(function() {
+    counter--;
+    if (counter === 0 || clearTimer) {
+      clearInterval(timer);
+      if(counter === 0){
+        count++
+        makeDom(mainElement,pickedCategoryComponent(allQuestions,randomizedAnswers,count))
+        countDown(mainElement)
+        clearTimer = false
+      }
+    }else{
+      countDownElement.innerHTML = String(counter)
+      console.log(counter);
+    }
+}, 1000);
+}
 let start = 15
-let correctAnsw:CorrectAnswer[] = []
 let correct:number = 0
 let incorrect:number = 0
 let count:number = 0
 let allQuestions:Question[] = []
 let randomizedAnswers:String|Number[] = []
+
+let clearTimer:boolean = false
 
 async function init(){
   const rootElement = document.getElementById('root')
