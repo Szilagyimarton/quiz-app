@@ -13,7 +13,7 @@ const skeleton = () => `
 <main></main>
 <footer></footer>`;
 const categoriesComponent = (categories) => `
-<h3>Pick a category</h3>
+<h3 class="title">Pick a category</h3>
 <div class="categories">
   ${categories.map(category => `
     <p class="category" data-id="${category.id}" data-text="${category.name}" data-hover="click"></p>
@@ -24,7 +24,7 @@ const pickedCategoryComponent = (questions, randomizedAnswers, count) => `
 <div class="pickedCategory"> 
   <div class="informations">
     <p id="countdown">10</p>
-    <p class="result"><span class="correct">Correct answers:${correct}</span> | <span class="incorrect" >Incorrect answers: ${incorrect}</span></p>
+    <p class="result"><span class="material-symbols-outlined"> thumb_up </span>${correct}  |  <span class="material-symbols-outlined">thumb_down</span> ${incorrect}</p>
   </div>
   <h1>${questions[0].category}</h1>
     <div class="question">
@@ -86,6 +86,7 @@ const makeDom = (element, component) => {
 const nextAnswers = (e, mainElement, allQuestions) => {
     const target = e.target;
     if (target.className === "next") {
+        isThereChosenAnswer = false;
         count++;
         if (count === allQuestions.length) {
             showResult(mainElement, showResultComponent);
@@ -103,11 +104,13 @@ const clickToBack = (e, mainElement, categoriesComponent, categories) => {
         console.log("back");
         makeDom(mainElement, categoriesComponent(categories));
         count = 0;
+        clearTimer = true;
     }
 };
 const checkAnswer = (e) => {
     const target = e.target;
     if (target.className === "answerOption") {
+        isThereChosenAnswer = true;
         const next = document.querySelector(".next");
         next.disabled = false;
         clearTimer = true;
@@ -136,8 +139,9 @@ const countDown = (mainElement) => {
         counter--;
         if (counter === 0 || clearTimer) {
             clearInterval(timer);
-            if (counter === 0) {
+            if (counter === 0 && !isThereChosenAnswer) {
                 count++;
+                incorrect++;
                 makeDom(mainElement, pickedCategoryComponent(allQuestions, randomizedAnswers, count));
                 countDown(mainElement);
                 clearTimer = false;
@@ -155,6 +159,7 @@ let incorrect = 0;
 let count = 0;
 let allQuestions = [];
 let randomizedAnswers = [];
+let isThereChosenAnswer = false;
 let clearTimer = false;
 function init() {
     return __awaiter(this, void 0, void 0, function* () {

@@ -9,7 +9,7 @@ type PickedCategoryResponse = {
 type Category = {
   id: number,
   name: string
-}
+} 
 
 type Question = {
   type: string,
@@ -35,7 +35,7 @@ const skeleton = () => `
 <footer></footer>`
 
 const categoriesComponent = (categories:Category[]) => `
-<h3>Pick a category</h3>
+<h3 class="title">Pick a category</h3>
 <div class="categories">
   ${categories.map(category => `
     <p class="category" data-id="${category.id}" data-text="${category.name}" data-hover="click"></p>
@@ -47,7 +47,7 @@ const pickedCategoryComponent = (questions:Question[],randomizedAnswers:any, cou
 <div class="pickedCategory"> 
   <div class="informations">
     <p id="countdown">10</p>
-    <p class="result"><span class="correct">Correct answers:${correct}</span> | <span class="incorrect" >Incorrect answers: ${incorrect}</span></p>
+    <p class="result"><span class="material-symbols-outlined"> thumb_up </span>${correct}  |  <span class="material-symbols-outlined">thumb_down</span> ${incorrect}</p>
   </div>
   <h1>${questions[0].category}</h1>
     <div class="question">
@@ -116,6 +116,7 @@ const makeDom = (element:HTMLElement,component: string) => {
 const nextAnswers = (e:MouseEvent,mainElement:HTMLElement,allQuestions:Question[]) => {
   const target = e.target as HTMLButtonElement
   if(target.className === "next"){
+    isThereChosenAnswer = false
       count++
       if(count === allQuestions.length){
         showResult(mainElement,showResultComponent)
@@ -132,8 +133,9 @@ const clickToBack = (e:MouseEvent,mainElement:HTMLElement,categoriesComponent:(c
   const target = e.target as HTMLButtonElement
   if(target.className === "back"){
     console.log("back")
-  makeDom(mainElement,categoriesComponent(categories))
-  count = 0
+    makeDom(mainElement,categoriesComponent(categories))
+    count = 0
+    clearTimer = true
   }
 }
 
@@ -141,6 +143,7 @@ const checkAnswer = (e:MouseEvent) => {
   const target = e.target as HTMLButtonElement
  
   if(target.className === "answerOption"){
+    isThereChosenAnswer = true
     const next = document.querySelector(".next") as HTMLButtonElement
     next.disabled = false
     clearTimer = true
@@ -170,9 +173,10 @@ const countDown = (mainElement:HTMLElement) => {
   const timer = setInterval(function() {
     counter--;
     if (counter === 0 || clearTimer) {
-      clearInterval(timer);
-      if(counter === 0){
+        clearInterval(timer);
+      if(counter === 0 && !isThereChosenAnswer){
         count++
+        incorrect++
         makeDom(mainElement,pickedCategoryComponent(allQuestions,randomizedAnswers,count))
         countDown(mainElement)
         clearTimer = false
@@ -183,13 +187,14 @@ const countDown = (mainElement:HTMLElement) => {
     }
 }, 1000);
 }
+
 let start = 15
 let correct:number = 0
 let incorrect:number = 0
 let count:number = 0
 let allQuestions:Question[] = []
-let randomizedAnswers:String|Number[] = []
-
+let randomizedAnswers: (string | number)[][] = []
+let isThereChosenAnswer:boolean = false
 let clearTimer:boolean = false
 
 async function init(){
