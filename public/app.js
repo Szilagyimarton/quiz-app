@@ -101,7 +101,6 @@ const nextAnswers = (e, mainElement, allQuestions) => {
 const clickToBack = (e, mainElement, categoriesComponent, categories) => {
     const target = e.target;
     if (target.className === "back") {
-        console.log("back");
         makeDom(mainElement, categoriesComponent(categories));
         count = 0;
         clearTimer = true;
@@ -121,7 +120,6 @@ const checkAnswer = (e) => {
         if (target.textContent === (question === null || question === void 0 ? void 0 : question.correct_answer)) {
             correct++;
             target.classList.add("correct");
-            console.log("correct");
         }
         else {
             incorrect++;
@@ -149,7 +147,6 @@ const countDown = (mainElement) => {
         }
         else {
             countDownElement.innerHTML = String(counter);
-            console.log(counter);
         }
     }, 1000);
 };
