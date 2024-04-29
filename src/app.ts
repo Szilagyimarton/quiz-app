@@ -132,7 +132,6 @@ const nextAnswers = (e:MouseEvent,mainElement:HTMLElement,allQuestions:Question[
 const clickToBack = (e:MouseEvent,mainElement:HTMLElement,categoriesComponent:(categories:Category[]) => string,categories:Category[]) => {
   const target = e.target as HTMLButtonElement
   if(target.className === "back"){
-    console.log("back")
     makeDom(mainElement,categoriesComponent(categories))
     count = 0
     clearTimer = true
@@ -154,7 +153,6 @@ const checkAnswer = (e:MouseEvent) => {
     if(target.textContent === question?.correct_answer){
       correct++
       target.classList.add("correct")
-      console.log("correct")
     }else{
       incorrect++
       target.classList.add("incorrect")
@@ -183,7 +181,6 @@ const countDown = (mainElement:HTMLElement) => {
       }
     }else{
       countDownElement.innerHTML = String(counter)
-      console.log(counter);
     }
 }, 1000);
 }
