@@ -126,6 +126,11 @@ html{
   opacity: 0.8;
   color: black;
 }
+.answerOption.rightAnswer{
+ background-color: #0f5e3e;
+ opacity: 0.5;
+
+}
 .answerOption.correct{
   background-color: #0f5e3e;
   opacity: 0.8;
@@ -146,6 +151,7 @@ html{
   border: 1px solid;
  
 }
+
 
 /*Show results*/
 

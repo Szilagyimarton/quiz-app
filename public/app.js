@@ -124,6 +124,9 @@ const checkAnswer = (e) => {
         else {
             incorrect++;
             target.classList.add("incorrect");
+            const answers = document.querySelectorAll(".answerOption");
+            const rightAnswer = Array.from(answers).find(answ => (question === null || question === void 0 ? void 0 : question.correct_answer) === answ.textContent);
+            rightAnswer === null || rightAnswer === void 0 ? void 0 : rightAnswer.classList.add("rightAnswer");
         }
     }
 };
@@ -143,6 +146,7 @@ const countDown = (mainElement) => {
                 makeDom(mainElement, pickedCategoryComponent(allQuestions, randomizedAnswers, count));
                 countDown(mainElement);
                 clearTimer = false;
+                clearInterval(timer);
             }
         }
         else {

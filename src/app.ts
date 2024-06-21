@@ -156,6 +156,9 @@ const checkAnswer = (e:MouseEvent) => {
     }else{
       incorrect++
       target.classList.add("incorrect")
+      const answers = document.querySelectorAll(".answerOption")
+      const rightAnswer = Array.from(answers).find(answ => question?.correct_answer === answ.textContent)
+      rightAnswer?.classList.add("rightAnswer")
     }
   }
 
@@ -178,6 +181,7 @@ const countDown = (mainElement:HTMLElement) => {
         makeDom(mainElement,pickedCategoryComponent(allQuestions,randomizedAnswers,count))
         countDown(mainElement)
         clearTimer = false
+        clearInterval(timer)
       }
     }else{
       countDownElement.innerHTML = String(counter)
